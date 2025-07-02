@@ -2,105 +2,172 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- より確実なビューポート設定 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <!-- iOS Safari対応 -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>さくやちゃん スライドパズル</title>
     
     <!-- PWA設定 -->
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuOBleOBj+OChuOBoeOCg+OCkyDjgrnjg6njgqTjg4njg5Hjgrrjg6siLAogICJzaG9ydF9uYW1lIjogIuOCueODqeOCpOODieODkeOCuuODqyIsCiAgImRlc2NyaXB0aW9uIjogIjPDlzMg44K544Op44Kk44OJ44OR44K644Or44Ky44O844OgIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmIiwKICAidGhlbWVfY29sb3IiOiAiI2ZmNmI5ZCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBSEFBQUFCd0NBTUFBQUI4QUFBQUFBQUFBWE5TUjBJQXJzNGM2UUFBQUFSblFVMUJBQUN4and2OFlRVUFBQUFKY0VoWmN3QUFHZEFBQUJUV0FSalJ5dTBBQUFBTUVsRVFWUjQybU5rWUhYWUFBQUFBRWxGVGtTdVFtQ0MiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
     
     <style>
+        /* リセットCSS追加 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            /* フォントサイズの自動調整を防ぐ */
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            /* 高さを確実に制御 */
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-start; 
-            min-height: 100vh; 
+            min-height: 100vh;
+            /* より確実な高さ制御 */
+            height: auto;
             margin: 0; 
+            padding: 5px;
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%); 
-            padding: 10px;
+            /* タッチ操作とスクロール制御 */
             touch-action: manipulation;
             user-select: none;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             -ms-touch-action: manipulation;
             overscroll-behavior: contain;
+            /* ズーム防止を強化 */
+            overflow-x: hidden;
+            position: relative;
+            width: 100%;
         }
+        
         .game-container {
             background: white; 
             border-radius: 20px; 
-            padding: 15px; 
+            padding: 10px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
             text-align: center; 
-            max-width: 95vw; 
+            /* より安全なサイズ制御 */
+            max-width: calc(100vw - 20px);
+            max-width: calc(100% - 20px);
             width: 100%;
+            /* 高さの制御 */
+            max-height: calc(100vh - 20px);
+            overflow: visible;
+            position: relative;
         }
+        
         h1 {
             color: #ff6b9d; 
             margin: 5px 0; 
-            font-size: clamp(1.5em, 5vw, 2em);
+            /* より安全なフォントサイズ */
+            font-size: min(6vw, 32px);
+            line-height: 1.2;
         }
+        
         .subtitle {
             display: none;
         }
+        
         .top-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
+            margin-bottom: 10px;
+            gap: 8px;
         }
+        
         .reference-image {
-            width: min(120px, 30vw); 
-            height: min(120px, 30vw); 
+            /* より確実なサイズ制御 */
+            width: min(100px, 25vw, 100px); 
+            height: min(100px, 25vw, 100px); 
             border-radius: 8px; 
             border: 2px solid #ff6b9d;
+            flex-shrink: 0;
         }
+        
         .stats {
             display: flex; 
             justify-content: center;
-            gap: 15px;
+            gap: min(15px, 4vw);
             width: 100%;
+            flex-wrap: wrap;
         }
+        
         .stat {
             background: #f8f9ff; 
-            padding: 8px 12px; 
+            padding: 6px 10px; 
             border-radius: 10px;
             text-align: center;
-            min-width: 60px;
+            min-width: 50px;
+            flex-shrink: 0;
         }
+        
         .stat-number {
-            font-size: clamp(16px, 4vw, 20px); 
+            font-size: min(5vw, 18px); 
             font-weight: bold; 
             color: #ff6b9d;
+            line-height: 1.2;
         }
+        
         .stat-label {
-            font-size: clamp(10px, 2.5vw, 12px); 
+            font-size: min(3vw, 11px); 
             color: #666; 
             margin-top: 2px;
+            line-height: 1.2;
         }
+        
         .puzzle-container {
             display: inline-block; 
             border: 4px solid #ff6b9d; 
             border-radius: 15px; 
             background: #f8f8f8; 
-            padding: 8px; 
-            margin: 10px 0;
+            padding: 6px; 
+            margin: 8px 0;
+            /* サイズオーバーフロー防止 */
+            max-width: 100%;
+            overflow: visible;
         }
+        
         .puzzle-grid {
             display: grid; 
             grid-template-columns: repeat(3, var(--piece-size)); 
             grid-template-rows: repeat(3, var(--piece-size)); 
-            gap: 3px; 
+            gap: 2px; 
             background: #ddd; 
-            padding: 3px; 
+            padding: 2px; 
             border-radius: 10px;
-            --piece-size: min(160px, calc((100vw - 50px) / 3 - 6px));
+            /* より安全なピースサイズ計算 */
+            --piece-size: min(
+                min(140px, calc((100vw - 80px) / 3)), 
+                min(140px, calc((100% - 60px) / 3)),
+                140px
+            );
+            /* グリッドの最大サイズ制限 */
+            max-width: calc(100vw - 60px);
+            width: fit-content;
+            margin: 0 auto;
         }
+        
         .puzzle-piece {
             background-size: calc(var(--piece-size) * 3) calc(var(--piece-size) * 3); 
             border: 2px solid #fff; 
-            border-radius: 8px; 
+            border-radius: 6px; 
             cursor: pointer; 
             transition: transform 0.1s ease, box-shadow 0.1s ease; 
             position: relative; 
@@ -113,43 +180,56 @@
             user-select: none;
             width: var(--piece-size);
             height: var(--piece-size);
-            /* Android Chrome対応 */
+            /* GPU加速とパフォーマンス向上 */
             -webkit-transform: translateZ(0);
             transform: translateZ(0);
             will-change: transform;
+            /* サイズ固定を強化 */
+            min-width: var(--piece-size);
+            min-height: var(--piece-size);
+            max-width: var(--piece-size);
+            max-height: var(--piece-size);
+            flex-shrink: 0;
         }
+        
         .puzzle-piece:hover, .puzzle-piece:active {
             transform: scale(1.03); 
             box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         }
+        
         .puzzle-piece:active {
             transform: scale(0.98);
             transition: transform 0.05s ease;
         }
+        
         .puzzle-piece.empty {
             background: #f0f0f0 !important; 
             border: 2px dashed #ccc; 
             cursor: default;
         }
+        
         .puzzle-piece.empty:hover, .puzzle-piece.empty:active {
             transform: none; 
             box-shadow: none;
         }
+        
         .puzzle-piece.locked {
             opacity: 0.7;
             cursor: not-allowed !important;
             background-color: #c0c0c0 !important;
         }
+        
         .puzzle-piece.locked:hover, .puzzle-piece.locked:active {
             transform: none !important;
             box-shadow: none !important;
         }
-        }
+        
         .puzzle-piece.super-hint-piece {
             animation: pulse 1s infinite;
             box-shadow: 0 0 15px rgba(255, 68, 68, 0.8) !important;
             position: relative;
         }
+        
         .puzzle-piece.super-hint-piece::after {
             content: '';
             position: absolute;
@@ -158,50 +238,58 @@
             right: 0;
             bottom: 0;
             background: linear-gradient(145deg, rgba(255, 68, 68, 0.5), rgba(204, 0, 0, 0.5));
-            border-radius: 8px;
+            border-radius: 6px;
             pointer-events: none;
         }
+        
         .puzzle-piece.super-hint-target {
             border: 4px solid #ff4444 !important;
             animation: borderGlow 1s infinite alternate;
             box-shadow: 0 0 15px rgba(255, 68, 68, 0.8) !important;
         }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        
         @keyframes borderGlow {
             0% { border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.8); }
             100% { border-color: #ff0000; box-shadow: 0 0 25px rgba(255, 0, 0, 1); }
         }
+        
         .hint-number {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: clamp(24px, 6vw, 36px);
+            font-size: min(7vw, 28px);
             font-weight: bold;
             color: rgba(255, 255, 255, 0.8);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s ease;
+            line-height: 1;
         }
+        
         .controls {
-            margin: 15px 0;
+            margin: 10px 0;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
+            padding: 0 5px;
         }
+        
         button {
             background: linear-gradient(45deg, #ff6b9d, #ff8fab); 
             color: white; 
             border: none; 
-            padding: 12px 20px; 
+            padding: 10px 16px; 
             border-radius: 25px; 
             cursor: pointer; 
-            font-size: clamp(12px, 3vw, 14px); 
+            font-size: min(4vw, 13px); 
             font-weight: bold; 
             transition: transform 0.1s ease, box-shadow 0.1s ease; 
             box-shadow: 0 4px 15px rgba(255,107,157,0.3);
@@ -210,61 +298,78 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            min-height: 44px;
-            min-width: 80px;
+            /* より確実なタッチ対応 */
+            min-height: 40px;
+            min-width: 70px;
+            line-height: 1.2;
+            flex-shrink: 0;
         }
+        
         button:hover, button:active {
             transform: translateY(-1px); 
             box-shadow: 0 5px 18px rgba(255,107,157,0.4);
         }
+        
         button:active {
             transform: translateY(0px) scale(0.98);
             transition: transform 0.05s ease;
         }
+        
         .hint-button {
             background: linear-gradient(45deg, #4CAF50, #8BC34A);
         }
+        
         .hint-button.active {
             background: linear-gradient(45deg, #FF9800, #FFC107);
         }
+        
         .super-hint-button {
             background: linear-gradient(45deg, #ff4444, #ff6666);
             animation: rainbow 2s infinite;
             font-weight: bold;
         }
+        
         @keyframes rainbow {
             0% { background: linear-gradient(45deg, #ff4444, #ff6666); }
             33% { background: linear-gradient(45deg, #4CAF50, #8BC34A); }
             66% { background: linear-gradient(45deg, #2196F3, #64B5F6); }
             100% { background: linear-gradient(45deg, #ff4444, #ff6666); }
         }
+        
         .hint-message {
             background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
             border: 3px solid #ff6b9d;
-            border-radius: 20px;
-            padding: 20px;
-            margin: 15px 0;
-            font-size: clamp(16px, 4vw, 18px);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 5px;
+            font-size: min(4.5vw, 16px);
             font-weight: bold;
             color: #2c3e50;
-            min-height: 60px;
+            min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             box-shadow: 0 8px 25px rgba(255, 107, 157, 0.2);
             line-height: 1.4;
+            /* オーバーフロー防止 */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: calc(100vw - 30px);
         }
+        
         .hint-message .step-number {
             color: #ff4444;
             font-size: 1.2em;
             text-shadow: 1px 1px 2px rgba(255, 68, 68, 0.3);
         }
+        
         .hint-message .target-position {
             color: #4CAF50;
             font-weight: 900;
             text-shadow: 1px 1px 2px rgba(76, 175, 80, 0.3);
         }
+        
         .victory-overlay {
             position: fixed;
             top: 0;
@@ -277,19 +382,21 @@
             align-items: center;
             justify-content: center;
         }
+        
         .victory-circle {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
+            width: min(300px, 80vw);
+            height: min(300px, 80vw);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 350px;
+            font-size: min(350px, 70vw);
             animation: circleAppear 0.5s ease-in-out;
         }
+        
         .victory-popup {
             position: absolute;
             bottom: 20%;
@@ -297,54 +404,158 @@
             transform: translateX(-50%);
             background: linear-gradient(45deg, #4CAF50, #8BC34A);
             color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             text-align: center;
-            max-width: 90vw;
-            min-width: 280px;
+            max-width: calc(100vw - 20px);
+            min-width: min(280px, calc(100vw - 40px));
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: popupSlide 0.5s ease-in-out 0.3s both;
+            font-size: min(4vw, 14px);
+            line-height: 1.4;
         }
+        
         @keyframes circleAppear {
             0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
+        
         @keyframes popupSlide {
             0% { transform: translateX(-50%) translateY(100px); opacity: 0; }
             100% { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
+        
         .victory-message {
             display: none;
         }
+        
         @keyframes celebrate {
             0% { transform: scale(0.8); opacity: 0; } 
             50% { transform: scale(1.1); } 
             100% { transform: scale(1); opacity: 1; }
         }
-        @media (max-width: 480px) {
+        
+        /* より具体的なレスポンシブ対応 */
+        @media screen and (max-width: 480px) {
             .game-container {
-                padding: 15px;
-                margin: 5px;
+                padding: 8px;
+                margin: 2px;
+                border-radius: 15px;
             }
+            
             .puzzle-container {
-                padding: 5px;
-                margin: 10px 0;
+                padding: 4px;
+                margin: 6px 0;
             }
+            
+            .puzzle-grid {
+                --piece-size: min(
+                    calc((100vw - 70px) / 3), 
+                    calc((100% - 50px) / 3),
+                    120px
+                );
+                gap: 1px;
+                padding: 1px;
+            }
+            
             .controls {
-                margin: 10px 0;
+                margin: 8px 0;
+                gap: 6px;
             }
+            
             button {
-                padding: 10px 16px;
-                margin: 3px;
+                padding: 8px 12px;
+                margin: 2px;
+                font-size: min(3.5vw, 12px);
+                min-height: 36px;
+                min-width: 60px;
             }
+            
             .hint-message {
-                padding: 15px;
-                font-size: clamp(14px, 3.5vw, 16px);
+                padding: 12px;
+                font-size: min(4vw, 14px);
+                margin: 8px 2px;
+            }
+            
+            h1 {
+                font-size: min(5vw, 24px);
+            }
+            
+            .reference-image {
+                width: min(80px, 20vw); 
+                height: min(80px, 20vw); 
             }
         }
-        @media (max-width: 320px) {
+        
+        @media screen and (max-width: 360px) {
             .puzzle-grid {
-                --piece-size: calc((100vw - 60px) / 3 - 8px);
+                --piece-size: min(
+                    calc((100vw - 60px) / 3), 
+                    calc((100% - 40px) / 3),
+                    100px
+                );
+            }
+            
+            .game-container {
+                padding: 6px;
+            }
+            
+            button {
+                font-size: min(3vw, 11px);
+                padding: 6px 10px;
+                min-height: 32px;
+                min-width: 55px;
+            }
+            
+            .hint-message {
+                font-size: min(3.5vw, 13px);
+                padding: 10px;
+            }
+        }
+        
+        @media screen and (max-width: 320px) {
+            .puzzle-grid {
+                --piece-size: min(
+                    calc((100vw - 50px) / 3), 
+                    calc((100% - 30px) / 3),
+                    90px
+                );
+            }
+        }
+        
+        /* 横向き対応 */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            body {
+                padding: 2px;
+            }
+            
+            .game-container {
+                padding: 5px;
+                max-height: calc(100vh - 10px);
+            }
+            
+            .top-section {
+                margin-bottom: 5px;
+                gap: 5px;
+            }
+            
+            .reference-image {
+                width: min(60px, 15vw); 
+                height: min(60px, 15vw); 
+            }
+            
+            .puzzle-container {
+                margin: 5px 0;
+            }
+            
+            .controls {
+                margin: 5px 0;
+            }
+            
+            .hint-message {
+                padding: 8px;
+                margin: 5px 2px;
+                min-height: 35px;
             }
         }
     </style>
@@ -395,6 +606,7 @@
             <button onclick="showSuperHint()" class="super-hint-button" id="superHintButton">✨ 超ヒント</button>
         </div>
     </div>
+    
     <script>
         // デフォルト画像（グラデーション）を作成
         function createDefaultImage() {
@@ -454,8 +666,7 @@
                 .catch(err => console.log('PWA Service Worker registration failed'));
             }
 
-            // 画像ファイル名を変更する場合はここを修正
-            imageData = 'sakuya.png';  // ← 新しいファイル名に変更
+            imageData = 'sakuya.png';
             console.log('Loading sakuya.png...');
             
             // 画像読み込みエラー時のフォールバック
@@ -484,7 +695,7 @@
         function updatePuzzleGridSize() {
             const puzzleGrid = document.getElementById('puzzleGrid');
             const containerWidth = Math.min(window.innerWidth - 50, 500);
-            const pieceSize = Math.min(160, (containerWidth - 30) / 3 - 6);
+            const pieceSize = Math.min(140, (containerWidth - 30) / 3 - 6);
             
             puzzleGrid.style.setProperty('--piece-size', pieceSize + 'px');
             
@@ -499,7 +710,7 @@
             const canvas = document.getElementById('referenceImage');
             const ctx = canvas.getContext('2d');
             
-            const refSize = Math.min(120, window.innerWidth * 0.3);
+            const refSize = Math.min(100, window.innerWidth * 0.25);
             canvas.width = refSize;
             canvas.height = refSize;
             canvas.style.width = refSize + 'px';
@@ -536,7 +747,7 @@
         }
 
         function initializePuzzle() {
-            puzzle = [1, 2, 3, 4, 5, 6, 7, 8, 0]; // 新しい番号体系
+            puzzle = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             emptyPos = 8;
             hintUsedThisRound = false;
             clearSuperHint();
@@ -1095,7 +1306,7 @@
             hintUsedThisRound = false;
             clearSuperHint();
             
-            const pieces = [1, 2, 3, 4, 5, 6, 7, 8, 0]; // 新しい番号体系
+            const pieces = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             
             for (let i = pieces.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1342,9 +1553,9 @@
 
         function checkWin() {
             for (let i = 0; i < 8; i++) {
-                if (puzzle[i] !== i + 1) return false; // 新しい番号体系: 1,2,3,4,5,6,7,8
+                if (puzzle[i] !== i + 1) return false;
             }
-            return puzzle[8] === 0; // 最後は空白
+            return puzzle[8] === 0;
         }
 
         // スマホでのダブルタップズーム防止と高速タッチ対応（Android強化）
