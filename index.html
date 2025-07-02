@@ -523,39 +523,148 @@
             }
         }
         
-        /* 横向き対応 */
+        /* 横向き対応 - サイドボタン配置 */
         @media screen and (orientation: landscape) and (max-height: 500px) {
             body {
                 padding: 2px;
+                overflow: hidden;
             }
             
             .game-container {
                 padding: 5px;
                 max-height: calc(100vh - 10px);
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+            
+            .landscape-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                flex: 1;
+                gap: 10px;
+            }
+            
+            .landscape-left-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-width: 80px;
+                align-items: center;
+            }
+            
+            .landscape-right-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-width: 80px;
+                align-items: center;
+            }
+            
+            .landscape-center-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                flex: 1;
+                max-width: 500px;
             }
             
             .top-section {
-                margin-bottom: 5px;
-                gap: 5px;
+                margin-bottom: 3px;
+                gap: 3px;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
             }
             
             .reference-image {
-                width: min(60px, 15vw); 
-                height: min(60px, 15vw); 
+                width: min(50px, 10vw); 
+                height: min(50px, 10vw); 
+                margin-right: 10px;
+            }
+            
+            .stats {
+                gap: 8px;
+            }
+            
+            .stat {
+                padding: 4px 8px;
+                min-width: 40px;
+            }
+            
+            .stat-number {
+                font-size: min(4vw, 14px);
+            }
+            
+            .stat-label {
+                font-size: min(2.5vw, 9px);
             }
             
             .puzzle-container {
-                margin: 5px 0;
+                margin: 3px 0;
+            }
+            
+            .puzzle-grid {
+                --piece-size: min(
+                    calc((100vh - 100px) / 3), 
+                    calc((60vw) / 3),
+                    120px
+                );
             }
             
             .controls {
-                margin: 5px 0;
+                display: none; /* 通常のコントロールを非表示 */
             }
             
             .hint-message {
-                padding: 8px;
-                margin: 5px 2px;
-                min-height: 35px;
+                padding: 6px;
+                margin: 3px 2px;
+                min-height: 30px;
+                font-size: min(3vw, 12px);
+                max-width: 90%;
+            }
+            
+            /* サイドボタンのスタイル */
+            .landscape-left-controls button,
+            .landscape-right-controls button {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                width: 60px;
+                height: 80px;
+                padding: 8px 4px;
+                font-size: min(3vw, 11px);
+                border-radius: 15px;
+                min-height: 80px;
+                min-width: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1.1;
+                word-break: keep-all;
+            }
+            
+            h1 {
+                font-size: min(4vw, 20px);
+                margin: 2px 0;
+            }
+        }
+        
+        /* 横向きレイアウト用のコンテナ（通常時は非表示） */
+        .landscape-container {
+            display: none;
+        }
+        
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .landscape-container {
+                display: flex;
+            }
+            
+            .top-section,
+            .puzzle-container,
+            .hint-message {
+                /* これらの要素は landscape-center-content に移動 */
             }
         }
     </style>
@@ -565,30 +674,79 @@
         <h1>🌸 スライドパズル 🌸</h1>
         <p class="subtitle">3×3 スライドパズル</p>
         
-        <div class="top-section">
-            <canvas id="referenceImage" class="reference-image" width="120" height="120"></canvas>
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-number" id="moveCount">0</div>
-                    <div class="stat-label">手数</div>
+        <!-- 通常表示（縦向き） -->
+        <div class="portrait-layout">
+            <div class="top-section">
+                <canvas id="referenceImage" class="reference-image" width="120" height="120"></canvas>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number" id="moveCount">0</div>
+                        <div class="stat-label">手数</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="timeCount">00:00</div>
+                        <div class="stat-label">時間</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="bestTimeDisplay">--</div>
+                        <div class="stat-label">ベスト</div>
+                    </div>
                 </div>
-                <div class="stat">
-                    <div class="stat-number" id="timeCount">00:00</div>
-                    <div class="stat-label">時間</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number" id="bestTimeDisplay">--</div>
-                    <div class="stat-label">ベスト</div>
-                </div>
+            </div>
+            
+            <div class="puzzle-container">
+                <div class="puzzle-grid" id="puzzleGrid"></div>
+            </div>
+            
+            <div id="hintMessage" class="hint-message">
+                「超ヒント」ボタンを押すと、次に配置すべきピースと位置を教えます！
+            </div>
+            
+            <div class="controls">
+                <button onclick="shufflePuzzle()">シャッフル</button>
+                <button onclick="toggleHint()" class="hint-button" id="hintButton">ヒント</button>
+                <button onclick="showSuperHint()" class="super-hint-button" id="superHintButton">✨ 超ヒント</button>
             </div>
         </div>
         
-        <div class="puzzle-container">
-            <div class="puzzle-grid" id="puzzleGrid"></div>
-        </div>
-        
-        <div id="hintMessage" class="hint-message">
-            「超ヒント」ボタンを押すと、次に配置すべきピースと位置を教えます！
+        <!-- 横向き表示用レイアウト -->
+        <div class="landscape-container">
+            <div class="landscape-left-controls">
+                <button onclick="shufflePuzzle()" style="background: linear-gradient(45deg, #ff6b9d, #ff8fab);">シャッフル</button>
+                <button onclick="toggleHint()" class="hint-button" id="hintButtonLandscape" style="background: linear-gradient(45deg, #4CAF50, #8BC34A);">ヒント</button>
+            </div>
+            
+            <div class="landscape-center-content">
+                <div class="top-section">
+                    <canvas id="referenceImageLandscape" class="reference-image" width="120" height="120"></canvas>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-number" id="moveCountLandscape">0</div>
+                            <div class="stat-label">手数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="timeCountLandscape">00:00</div>
+                            <div class="stat-label">時間</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="bestTimeDisplayLandscape">--</div>
+                            <div class="stat-label">ベスト</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="puzzle-container">
+                    <div class="puzzle-grid" id="puzzleGridLandscape"></div>
+                </div>
+                
+                <div id="hintMessageLandscape" class="hint-message">
+                    「超ヒント」ボタンを押すと、次に配置すべきピースと位置を教えます！
+                </div>
+            </div>
+            
+            <div class="landscape-right-controls">
+                <button onclick="showSuperHint()" class="super-hint-button" id="superHintButtonLandscape" style="background: linear-gradient(45deg, #ff4444, #ff6666); animation: rainbow 2s infinite;">✨ 超ヒント</button>
+            </div>
         </div>
         
         <div class="victory-overlay" id="victoryOverlay">
@@ -598,12 +756,6 @@
         
         <div class="victory-message" id="victoryMessage">
             🎉 おめでとうございます！パズル完成です！ 🎉
-        </div>
-        
-        <div class="controls">
-            <button onclick="shufflePuzzle()">シャッフル</button>
-            <button onclick="toggleHint()" class="hint-button" id="hintButton">ヒント</button>
-            <button onclick="showSuperHint()" class="super-hint-button" id="superHintButton">✨ 超ヒント</button>
         </div>
     </div>
     
@@ -691,6 +843,93 @@
 
         // 画面サイズ変更時の調整
         window.addEventListener('resize', updatePuzzleGridSize);
+        window.addEventListener('orientationchange', handleOrientationChange);
+
+        function handleOrientationChange() {
+            setTimeout(() => {
+                updatePuzzleGridSize();
+                updateLandscapeLayout();
+            }, 100);
+        }
+
+        function updateLandscapeLayout() {
+            const isLandscape = window.innerHeight < 500 && window.innerWidth > window.innerHeight;
+            
+            if (isLandscape) {
+                // 横向きレイアウトに切り替え
+                document.querySelector('.portrait-layout').style.display = 'none';
+                document.querySelector('.landscape-container').style.display = 'flex';
+                
+                // データを横向きレイアウトに同期
+                syncToLandscapeLayout();
+            } else {
+                // 縦向きレイアウトに戻る
+                document.querySelector('.portrait-layout').style.display = 'block';
+                document.querySelector('.landscape-container').style.display = 'none';
+                
+                // データを縦向きレイアウトに同期
+                syncToPortraitLayout();
+            }
+        }
+
+        function syncToLandscapeLayout() {
+            // 統計情報を同期
+            document.getElementById('moveCountLandscape').textContent = document.getElementById('moveCount').textContent;
+            document.getElementById('timeCountLandscape').textContent = document.getElementById('timeCount').textContent;
+            document.getElementById('bestTimeDisplayLandscape').textContent = document.getElementById('bestTimeDisplay').textContent;
+            
+            // ヒントメッセージを同期
+            document.getElementById('hintMessageLandscape').innerHTML = document.getElementById('hintMessage').innerHTML;
+            
+            // ヒントボタンの状態を同期
+            const hintButton = document.getElementById('hintButton');
+            const hintButtonLandscape = document.getElementById('hintButtonLandscape');
+            
+            if (hintButton.classList.contains('active')) {
+                hintButtonLandscape.classList.add('active');
+                hintButtonLandscape.textContent = 'ヒント OFF';
+                hintButtonLandscape.style.background = 'linear-gradient(45deg, #FF9800, #FFC107)';
+            } else {
+                hintButtonLandscape.classList.remove('active');
+                hintButtonLandscape.textContent = 'ヒント';
+                hintButtonLandscape.style.background = 'linear-gradient(45deg, #4CAF50, #8BC34A)';
+            }
+            
+            // パズルグリッドを横向き用にコピー
+            const originalGrid = document.getElementById('puzzleGrid');
+            const landscapeGrid = document.getElementById('puzzleGridLandscape');
+            landscapeGrid.innerHTML = originalGrid.innerHTML;
+            
+            // 参照画像も同期
+            syncReferenceImage('referenceImageLandscape');
+        }
+
+        function syncToPortraitLayout() {
+            // 統計情報を同期
+            document.getElementById('moveCount').textContent = document.getElementById('moveCountLandscape').textContent;
+            document.getElementById('timeCount').textContent = document.getElementById('timeCountLandscape').textContent;
+            document.getElementById('bestTimeDisplay').textContent = document.getElementById('bestTimeDisplayLandscape').textContent;
+            
+            // ヒントメッセージを同期
+            document.getElementById('hintMessage').innerHTML = document.getElementById('hintMessageLandscape').innerHTML;
+        }
+
+        function syncReferenceImage(targetId) {
+            const sourceCanvas = document.getElementById('referenceImage');
+            const targetCanvas = document.getElementById(targetId);
+            const sourceCtx = sourceCanvas.getContext('2d');
+            const targetCtx = targetCanvas.getContext('2d');
+            
+            // サイズを設定
+            const size = Math.min(50, window.innerWidth * 0.1);
+            targetCanvas.width = size;
+            targetCanvas.height = size;
+            targetCanvas.style.width = size + 'px';
+            targetCanvas.style.height = size + 'px';
+            
+            // 画像をコピー
+            targetCtx.drawImage(sourceCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+        }
 
         function updatePuzzleGridSize() {
             const puzzleGrid = document.getElementById('puzzleGrid');
